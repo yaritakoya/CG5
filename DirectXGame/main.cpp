@@ -2,6 +2,7 @@
 #include "Shader.h"
 #include <Windows.h>
 // #include <d3dcompiler.h>
+#include "IndexBuffer.h"
 #include "PipelineState.h"
 #include "RootSignature.h"
 #include "VertexBuffer.h"
@@ -46,16 +47,42 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	PipelineState pipelineState;
 	SetupPipelineState(pipelineState, rs, vs, ps);
 
+	struct VertexData {
+		Vector4 position; // xyz座標
+	};
+
+	VertexData vertices[] = {
+	    {0.0f,  0.5f,  0.0f, 1.0f}, // 上
+	    {0.5f,  -0.5f, 0.0f, 1.0f}, // 右下
+	    {-0.5f, -0.5f, 0.0f, 1.0f}  // 左下
+	};
+
 	// vertexResourceの作成------
 	VertexBuffer vb;
-	vb.Create(sizeof(Vector4) * 3, sizeof(Vector4));
+	vb.Create(sizeof(vertices), sizeof(vertices[0]));
+
+	uint16_t indices[] = {
+	    0, 1, 2 // 三角形の頂点インデックス
+	};
+
+	// indexBufferの作成------
+	IndexBuffer ib;
+	ib.Create(sizeof(indices), sizeof(indices[0]));
+
+	// 頂点インデックスリソースにデータを書き込む
+	uint16_t* pGpuIndices = nullptr;
+	ib.Get()->Map(0, nullptr, reinterpret_cast<void**>(&pGpuIndices)); // インデックスリソースをCPUから書き込めるようにマップする
+
+	for (int i = 0; i < _countof(indices); ++i) {
+		pGpuIndices[i] = indices[i];
+	}
 
 	// 頂点リソースにデータを書き込む------
-	Vector4* vertexData = nullptr;
-	vb.Get()->Map(0, nullptr, reinterpret_cast<void**>(&vertexData)); // 頂点リソースをCPUから書き込めるようにマップする
-	vertexData[0] = {-0.5f, -0.5f, 0.0f, 1.0f};                       // 左下
-	vertexData[1] = {0.0f, 0.5f, 0.0f, 1.0f};                         // 上
-	vertexData[2] = {0.5f, -0.5f, 0.0f, 1.0f};                        // 右下
+	VertexData* pGpuVertices = nullptr;
+	vb.Get()->Map(0, nullptr, reinterpret_cast<void**>(&pGpuVertices)); // 頂点リソースをCPUから書き込めるようにマップする
+	for (int i = 0; i < _countof(vertices); ++i) {
+		pGpuVertices[i] = vertices[i];
+	}
 
 	// メインループ
 	while (true) {
@@ -71,16 +98,15 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		commandList->SetGraphicsRootSignature(rs.Get());     // ルートシグネチャの設定
 		commandList->SetPipelineState(pipelineState.Get());  // PSOの設定
 		commandList->IASetVertexBuffers(0, 1, vb.GetView()); // 頂点バッファビューの設定
+		commandList->IASetIndexBuffer(ib.GetView());         // インデックスバッファビューの設定
 		// トポロジの設定。今回は三角形リスト
 		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		// 描画コマンド。頂点数3、インスタンス数1、スタート頂点0、スタートインスタンス0
-		commandList->DrawInstanced(3, 1, 0, 0);
+		commandList->DrawIndexedInstanced(_countof(indices), 1, 0, 0, 0);
 
 		// 描画終了
 		dxCommon->PostDraw();
 	}
-
-	// リソースの解放
 
 	// エンジンの終了処理
 	KamataEngine::Finalize();
