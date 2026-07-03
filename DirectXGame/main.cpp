@@ -56,8 +56,6 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	vertexData[0] = {-0.5f, -0.5f, 0.0f, 1.0f};                       // 左下
 	vertexData[1] = {0.0f, 0.5f, 0.0f, 1.0f};                         // 上
 	vertexData[2] = {0.5f, -0.5f, 0.0f, 1.0f};                        // 右下
-	// 書き込んだらアンマップする
-	// vertexResource->Unmap(0, nullptr);
 
 	// メインループ
 	while (true) {
