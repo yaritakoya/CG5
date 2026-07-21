@@ -52,18 +52,17 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	};
 
 	VertexData vertices[] = {
-	    {0.0f,  0.5f,  0.0f, 1.0f}, // 上
-	    {0.5f,  -0.5f, 0.0f, 1.0f}, // 右下
-	    {-0.5f, -0.5f, 0.0f, 1.0f}  // 左下
+	    {-0.5f, 0.5f,  0.0f, 1.0f}, // 0 左上
+	    {0.5f,  0.5f,  0.0f, 1.0f}, // 1 右上
+	    {-0.5f, -0.5f, 0.0f, 1.0f}, // 2 左下
+	    {0.5f,  -0.5f, 0.0f, 1.0f}  // 3 右下
 	};
 
 	// vertexResourceの作成------
 	VertexBuffer vb;
 	vb.Create(sizeof(vertices), sizeof(vertices[0]));
 
-	uint16_t indices[] = {
-	    0, 1, 2 // 三角形の頂点インデックス
-	};
+	uint16_t indices[] = {0, 1, 2, 2, 1, 3};
 
 	// indexBufferの作成------
 	IndexBuffer ib;
