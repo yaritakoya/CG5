@@ -49,13 +49,15 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 	struct VertexData {
 		Vector4 position; // xyz座標
+		Vector2 texcoord; // uv座標
 	};
 
 	VertexData vertices[] = {
-	    {-0.5f, 0.5f,  0.0f, 1.0f}, // 0 左上
-	    {0.5f,  0.5f,  0.0f, 1.0f}, // 1 右上
-	    {-0.5f, -0.5f, 0.0f, 1.0f}, // 2 左下
-	    {0.5f,  -0.5f, 0.0f, 1.0f}  // 3 右下
+		// x, y, z, w,				//u, v
+	    {{-0.5f, 0.5f, 0.0f, 1.0f},  {0.0f, 0.0f}}, // 0 左上
+	    {{0.5f, 0.5f, 0.0f, 1.0f},   {1.0f, 0.0f}}, // 1 右上
+	    {{-0.5f, -0.5f, 0.0f, 1.0f}, {0.0f, 1.0f}}, // 2 左下
+	    {{0.5f, -0.5f, 0.0f, 1.0f},  {1.0f, 1.0f}}  // 3 右下
 	};
 
 	// vertexResourceの作成------
@@ -115,11 +117,17 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 void SetupPipelineState(PipelineState& pipelineState, RootSignature& rs, Shader& vs, Shader& ps) {
 	// inputLayoutの作成------
-	D3D12_INPUT_ELEMENT_DESC inputElementDescs[1] = {};
+	D3D12_INPUT_ELEMENT_DESC inputElementDescs[2] = {};
 	inputElementDescs[0].SemanticName = "POSITION";                        // 頂点の座標
 	inputElementDescs[0].SemanticIndex = 0;                                // 同じセマンティクスが複数ある場合の識別番号
 	inputElementDescs[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;          // データの形式(RGBA)
 	inputElementDescs[0].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT; // 頂点データ内のオフセット値。前の要素の次から自動で算出する
+	
+	inputElementDescs[1].SemanticName = "TEXCOORD";                        // 頂点のUV座標
+	inputElementDescs[1].SemanticIndex = 0;                                // 同じセマンティクスが複数ある場合の識別番号
+	inputElementDescs[1].Format = DXGI_FORMAT_R32G32_FLOAT;                // データの形式(UV)
+	inputElementDescs[1].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT; // 頂点データ内のオフセット値。前の要素の次から自動で算出する
+	
 	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc = {};
 	inputLayoutDesc.pInputElementDescs = inputElementDescs;    // 入力要素の配列
 	inputLayoutDesc.NumElements = _countof(inputElementDescs); // 入力要素の数
